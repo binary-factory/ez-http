@@ -1,0 +1,10 @@
+{
+  "name": "ez-http",
+  "description": "Easy HTTP-Server written in Typescript with annotation support.",
+  "license": "MIT",
+  "version": "0.0.1",
+  "repository": "https://github.com/binary-factory/ez-http.git",
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
+  "dependencies": {}
+}
