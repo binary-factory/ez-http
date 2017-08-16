@@ -6,5 +6,11 @@
   "repository": "https://github.com/binary-factory/ez-http.git",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
-  "dependencies": {}
+  "dependencies": {
+    "path-to-regexp": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^6.0.86",
+    "typescript": "^2.4.2"
+  }
 }

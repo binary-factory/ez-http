@@ -1,3 +1,6 @@
+# Typescript build
+dist
+
 # Logs
 logs
 *.log
