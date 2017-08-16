@@ -1,5 +1,5 @@
 export enum HttpMethod {
-    GET = 'get',
+    Get = 'get',
     Head = 'head',
     Post = 'post',
     Put = 'put',

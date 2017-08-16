@@ -1,27 +1,27 @@
-import { HttpMethod, RequestHandler } from "../core";
 import * as pathToRegexp from 'path-to-regexp';
+import { HttpMethod } from "../core";
+import { RequestHandlerContainer } from '../core/request-handler-container';
 import { EzRequest } from '../core/request';
-import { MiddlewareHolder } from '../core/middleware-holder';
 
 
-export class EzRoute extends MiddlewareHolder {
+export class EzRoute extends RequestHandlerContainer {
 
-    private _path: pathToRegexp.PathRegExp;
+    private _pathRegExp: pathToRegexp.PathRegExp;
 
-    constructor(path: pathToRegexp.Path, method: HttpMethod | string, private _handler: RequestHandler) {
+    constructor(private _path: pathToRegexp.Path, private _method: HttpMethod | string) {
         super();
-        this._path = pathToRegexp(path);
+        this._pathRegExp = pathToRegexp(this._path);
     }
 
-    match(request: EzRequest): boolean {
-        const matches = this._path.exec(request.parsedUrl.path);
+    matchPath(request: EzRequest): boolean {
+        const matches = this._pathRegExp.exec(request.parsedUrl.path);
         if (matches) {
             // Fill request params.
             request.params = {};
             for (let i = 1; i < matches.length; i++) {
                 const match = matches[i];
                 if (match) {
-                    const pathKey = this._path.keys[i - 1];
+                    const pathKey = this._pathRegExp.keys[i - 1];
                     request.params[pathKey.name] = match;
                 }
             }
@@ -32,20 +32,31 @@ export class EzRoute extends MiddlewareHolder {
         return false;
     }
 
+    matchMethod(request: EzRequest): boolean {
+        return request.method.toLowerCase() === this._method.toLowerCase();
+    }
 
-    get path(): pathToRegexp.PathRegExp {
+    get path(): pathToRegexp.Path {
         return this._path;
     }
 
-    set path(value: pathToRegexp.PathRegExp) {
+    set path(value: pathToRegexp.Path) {
         this._path = value;
     }
 
-    get handler(): RequestHandler {
-        return this._handler;
+    get pathRegExp(): pathToRegexp.PathRegExp {
+        return this._pathRegExp;
     }
 
-    set handler(value: RequestHandler) {
-        this._handler = value;
+    set pathRegExp(value: pathToRegexp.PathRegExp) {
+        this._pathRegExp = value;
+    }
+
+    get method(): HttpMethod | string {
+        return this._method;
+    }
+
+    set method(value: HttpMethod | string) {
+        this._method = value;
     }
 }

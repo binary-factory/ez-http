@@ -11,10 +11,18 @@ router.use(() => {
     console.log('before any route matched from router');
 });
 
-router.get('/test/:id', async (request: EzRequest, response: EzResponse) => {
-    console.log(request.params);
-    response.writeHead(200);
-    response.end('si senior');
-});
+router.get('/test/:id', [
+    () => {
+        console.log('before route handler');
+    },
+    (request: EzRequest, response: EzResponse) => {
+        console.log(request.params);
+        response.writeHead(200);
+        response.end('si senior');
+    },
+    () => {
+        console.log('after route handler');
+    },
+]);
 
 server.listen(8080);

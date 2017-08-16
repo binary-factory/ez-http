@@ -1,8 +1,8 @@
-import { MiddlewareHolder } from './core/middleware-holder';
+import { RequestHandlerContainer } from './core/request-handler-container';
 import * as http from 'http';
 import * as url from 'url';
 
-export class EzServer extends MiddlewareHolder {
+export class EzServer extends RequestHandlerContainer {
     private _server: http.Server;
 
     constructor() {
@@ -24,7 +24,7 @@ export class EzServer extends MiddlewareHolder {
     private async handleRequest(request: http.IncomingMessage, response: http.ServerResponse) {
         // Parse URL.
         try {
-            (<any>request).parsedUrl = url.parse(request.url);
+            (<any>request).parsedUrl = url.parse(request.url, true);
         } catch (ex) {
             //throw new HttpError(HttpErrorCodeClient.BadRequest, 'url malformed.');
             throw ex;
@@ -32,7 +32,7 @@ export class EzServer extends MiddlewareHolder {
 
         // Call all the middlewares in order.
         try {
-            await this.invokeMiddlewares(request, response);
+            await this.invokeRequestHandlers(request, response);
         } catch(ex) {
             console.log('error handling middleware', ex);
             throw ex;
