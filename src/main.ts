@@ -28,7 +28,7 @@ router.get('/test/:id', [
     },
     () => {
         console.log('after route handler');
-    },
+    }
 ]);
 
 router.add('/test/:id', '*', [

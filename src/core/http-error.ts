@@ -5,4 +5,20 @@ export class HttpError extends Error {
         super(message);
         this.name = HttpStatusCode[_statusCode];
     }
+
+    get statusCode(): HttpStatusCode {
+        return this._statusCode;
+    }
+
+    set statusCode(value: HttpStatusCode) {
+        this._statusCode = value;
+    }
+
+    get relatedError(): Error {
+        return this._relatedError;
+    }
+
+    set relatedError(value: Error) {
+        this._relatedError = value;
+    }
 }
