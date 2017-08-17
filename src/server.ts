@@ -29,7 +29,7 @@ export class EzServer extends EzMiddlewareHolder {
 
                         if (process.env.DEBUG) {
                             console.log('Sending HTTP-Error: ', err.message);
-                            console.log('Related: ', err.related);
+                            console.log('Related: ', err.relatedError);
                         }
                     } catch (ex) {
                         console.log('error during closing faulty request.');

@@ -14,7 +14,7 @@ router.use(() => {
 
 router.use(() => {
     console.log('router middleware');
-    //return MiddlewareAction.SkipHolder;
+    throw new Error('amk');
 });
 router.get('/test/:id', [
     () => {
