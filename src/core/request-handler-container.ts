@@ -32,7 +32,7 @@ export abstract class RequestHandlerContainer {
     invokeRequestHandler(requestHandler: RequestHandler, request: EzRequest, response: EzResponse) {
         if (typeof requestHandler === 'function') {
             return requestHandler(request, response);
-        } else  {
+        } else {
             return requestHandler.handleRequest(request, response);
         }
     }
