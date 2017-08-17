@@ -1,4 +1,5 @@
 export enum HttpMethod {
+    All = '*',
     Get = 'get',
     Head = 'head',
     Post = 'post',

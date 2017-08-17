@@ -5,6 +5,10 @@ import { EzResponse } from './response';
 export abstract class RequestHandlerContainer {
     private _requestHandlers: RequestHandler[] = [];
 
+    constructor() {
+
+    }
+
     use(middleware: RequestHandler | RequestHandler[]) {
         if (Array.isArray(middleware)) {
             this._requestHandlers.push(...middleware);
@@ -13,14 +17,19 @@ export abstract class RequestHandlerContainer {
         }
     }
 
-    async invokeRequestHandlers(request: EzRequest, response: EzResponse): Promise<void> {
+    async invokeRequestHandlers(request: EzRequest, response: EzResponse): Promise<boolean> {
         for (const requestHandler of this._requestHandlers) {
-            await this.invokeRequestHandler(requestHandler, request, response);
+            const exit = await this.invokeRequestHandler(requestHandler, request, response);
+            if (exit) {
+                return true;
+            }
             // TODO: Break if response was fully sent?
         }
+
+        return false;
     }
 
-    invokeRequestHandler(requestHandler: RequestHandler, request: EzRequest, response: EzResponse): Promise<void> | void {
+    invokeRequestHandler(requestHandler: RequestHandler, request: EzRequest, response: EzResponse) {
         if (typeof requestHandler === 'function') {
             return requestHandler(request, response);
         } else  {

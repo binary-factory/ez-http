@@ -4,12 +4,18 @@ import { HttpMethod } from '../core/http-method';
 import { RequestHandlerContainer } from '../core/request-handler-container';
 import { RequestHandlerHolder } from '../core/request-handler';
 import { EzRoute } from './route';
+import { HttpError } from '../core/http-error';
+import { HttpStatusCode } from '../core/http-status-code';
 
 export class EzRouter extends RequestHandlerContainer implements RequestHandlerHolder {
 
     private _routes: EzRoute[] = [];
 
-    async handleRequest(request: EzRequest, response: EzResponse): Promise<void> {
+    constructor(private _prefix?: string) {
+        super();
+    }
+
+    async handleRequest(request: EzRequest, response: EzResponse): Promise<boolean> {
         const matchingPath: EzRoute[] = [];
         for (const route of this._routes) {
             if (route.matchPath(request)) {
@@ -26,10 +32,15 @@ export class EzRouter extends RequestHandlerContainer implements RequestHandlerH
 
         if (matchingPath.length > 0) {
             if (matchingMethod.length > 0) {
-                for (const route of matchingMethod) {
-                    // Invoke router specific middleware.
-                    await this.invokeRequestHandlers(request, response);
 
+                // Invoke router specific middleware.
+                const exited = await this.invokeRequestHandlers(request, response);
+                if (exited) {
+                    console.log('a middleware of the router broke the chain.');
+                    return;
+                }
+
+                for (const route of matchingMethod) {
                     // Invoke route specific middleware.
                     await route.invokeRequestHandlers(request, response);
                 }
@@ -42,8 +53,7 @@ export class EzRouter extends RequestHandlerContainer implements RequestHandlerH
                 }
 
             } else {
-                response.writeHead(405);
-                response.end();
+                throw new HttpError(HttpStatusCode.MethodNotAllowed);
             }
         }
     }
@@ -72,5 +82,13 @@ export class EzRouter extends RequestHandlerContainer implements RequestHandlerH
 
     del(path: pathToRegexp.Path, handler: RequestHandler | RequestHandler[]) {
         this.add(path, HttpMethod.Delete, handler);
+    }
+
+    get prefix(): string {
+        return this._prefix;
+    }
+
+    set prefix(value: string) {
+        this._prefix = value;
     }
 }

@@ -33,6 +33,10 @@ export class EzRoute extends RequestHandlerContainer {
     }
 
     matchMethod(request: EzRequest): boolean {
+        if (this._method == HttpMethod.All) {
+            return true;
+        }
+
         return request.method.toLowerCase() === this._method.toLowerCase();
     }
 
