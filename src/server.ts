@@ -1,8 +1,8 @@
-import { RequestHandlerContainer } from './core/request-handler-container';
 import * as http from 'http';
 import * as url from 'url';
+import { EzMiddlewareHolder, EzRequest, EzResponse, HttpError, HttpStatusCode } from './core';
 
-export class EzServer extends RequestHandlerContainer {
+export class EzServer extends EzMiddlewareHolder {
     private _server: http.Server;
 
     constructor() {
@@ -21,22 +21,20 @@ export class EzServer extends RequestHandlerContainer {
         });
     }
 
-    private async handleRequest(request: http.IncomingMessage, response: http.ServerResponse) {
+    listen(port: number) {
+        this._server.listen(port);
+    }
+
+    private async handleRequest(request: EzRequest, response: EzResponse) {
         // Parse URL.
         try {
-            (<any>request).parsedUrl = url.parse(request.url, true);
+            request.parsedUrl = url.parse(request.url, true);
         } catch (ex) {
-            //throw new HttpError(HttpErrorCodeClient.BadRequest, 'url malformed.');
-            throw ex;
+            throw new HttpError(HttpStatusCode.BadRequest, 'url malformed.', ex);
         }
 
         // Call all the middlewares in order.
-        try {
-            await this.invokeRequestHandlers(request, response);
-        } catch(ex) {
-            console.log('error handling middleware', ex);
-            throw ex;
-        }
+        await this.execute(request, response);
 
         if (!response.headersSent) {
             response.writeHead(404);
@@ -45,9 +43,5 @@ export class EzServer extends RequestHandlerContainer {
         if (!response.finished) {
             response.end();
         }
-    }
-
-    listen(port: number) {
-        this._server.listen(port);
     }
 }

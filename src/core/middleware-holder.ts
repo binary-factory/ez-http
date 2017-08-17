@@ -8,7 +8,6 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
 
     protected _children: EzMiddleware[] = [];
 
-    // TODO: Cleanup!
     use(middleware: EzMiddlewareLike | EzMiddlewareLike[]) {
         let items: EzMiddlewareLike[] = [];
         if (Array.isArray(middleware)) {
@@ -33,10 +32,6 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
         }
 
         this._children.push(...converted);
-    }
-
-    protected compose(): EzMiddleware[] {
-        return this._children;
     }
 
     async execute(request: EzRequest, response: EzResponse): Promise<MiddlewareAction> {
@@ -73,6 +68,10 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
         }
 
         return MiddlewareAction.Continue;
+    }
+
+    protected compose(): EzMiddleware[] {
+        return this._children;
     }
 
     private wrapError(err: Error, message?: string): HttpError {
