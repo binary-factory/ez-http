@@ -4,18 +4,21 @@ import { EzServer } from './server';
 import { EzRouter } from './router/router';
 import { MiddlewareAction } from './core/middleware';
 
-const router = new EzRouter();
+const router1 = new EzRouter('test');
+const router2 = new EzRouter('test2');
 const server = new EzServer();
-server.use(router);
+server.use(router1);
 
-router.use(() => {
+router1.use(router2);
+
+router2.use(() => {
     console.log('before any route matched from router');
 });
 
-router.use(() => {
+router1.use(() => {
     console.log('router middleware');
 });
-router.get('/test/:id', [
+router1.get('/test/:id', [
     () => {
         console.log('before route handler');
     },
@@ -30,7 +33,7 @@ router.get('/test/:id', [
     }
 ]);
 
-router.add('/test/:id', '*',
+router1.add('/test/:id', '*',
     () => {
         console.log('before route handler2');
         return MiddlewareAction.SkipAll;

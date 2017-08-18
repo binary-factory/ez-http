@@ -8,6 +8,7 @@ export interface EzCoreRequest extends http.IncomingMessage {
     params?: any;
     router?: EzRouter;
     route?: EzRoute;
+    dirty?: boolean;
 }
 
 export interface EzRequest extends EzCoreRequest {

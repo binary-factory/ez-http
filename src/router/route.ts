@@ -1,6 +1,6 @@
+import * as pathToRegexp from 'path-to-regexp';
 import { EzRequest } from '../core/request';
 import { HttpMethod } from '../core/http-method';
-import * as pathToRegexp from 'path-to-regexp';
 import { EzMiddlewareHolder } from '../core/middleware-holder';
 
 export class EzRoute extends EzMiddlewareHolder {
@@ -11,6 +11,18 @@ export class EzRoute extends EzMiddlewareHolder {
     }
 
     private _pathRegExp: pathToRegexp.PathRegExp;
+
+    canActivate(request: EzRequest): boolean {
+        if (this.matchPath(request)) {
+            request.dirty = true;
+            if (this.matchMethod(request)) {
+                request.route = this;
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     get pathRegExp(): pathToRegexp.PathRegExp {
         return this._pathRegExp;
@@ -36,9 +48,11 @@ export class EzRoute extends EzMiddlewareHolder {
         this._method = value;
     }
 
-    matchPath(request: EzRequest): boolean {
+    private matchPath(request: EzRequest): boolean {
         const matches = this._pathRegExp.exec(request.parsedUrl.path);
         if (matches) {
+            console.log(matches[0]);
+            console.log(request.url);
             // Fill request params.
             request.params = {};
             for (let i = 1; i < matches.length; i++) {
@@ -55,7 +69,7 @@ export class EzRoute extends EzMiddlewareHolder {
         return false;
     }
 
-    matchMethod(request: EzRequest): boolean {
+    private matchMethod(request: EzRequest): boolean {
         if (this._method == HttpMethod.All) {
             return true;
         }

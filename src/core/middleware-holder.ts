@@ -6,7 +6,7 @@ import { HttpStatusCode } from './http-status-code';
 
 export abstract class EzMiddlewareHolder extends EzMiddleware {
 
-    protected _children: EzMiddleware[] = [];
+    private _children: EzMiddleware[] = [];
 
     use(...middlewares: EzMiddlewareLike[]) {
         const holders: EzMiddleware[] = [];
@@ -22,6 +22,11 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
             } else {
                 holders.push(middleware);
             }
+        }
+
+        // Set parents.
+        for (const holder of holders) {
+            holder.parent = this;
         }
 
         this._children.push(...holders);
@@ -73,5 +78,13 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
         } else {
             return new HttpError(HttpStatusCode.InternalServerError, message, err);
         }
+    }
+
+    get children(): EzMiddleware[] {
+        return this._children;
+    }
+
+    set children(value: EzMiddleware[]) {
+        this._children = value;
     }
 }
