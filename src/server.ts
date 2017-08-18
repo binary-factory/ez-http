@@ -54,7 +54,7 @@ export class EzServer extends EzMiddlewareHolder {
         await this.execute(request, response);
 
         if (!response.headersSent) {
-            response.writeHead(404);
+            response.writeHead(HttpStatusCode.NotFound);
         }
 
         if (!response.finished) {

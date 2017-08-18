@@ -8,30 +8,23 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
 
     protected _children: EzMiddleware[] = [];
 
-    use(middleware: EzMiddlewareLike | EzMiddlewareLike[]) {
-        let items: EzMiddlewareLike[] = [];
-        if (Array.isArray(middleware)) {
-            items.push(...middleware);
-        } else {
-            items.push(middleware);
-        }
-
-        const converted: EzMiddleware[] = [];
-        for (const middleware of items) {
+    use(...middlewares: EzMiddlewareLike[]) {
+        const holders: EzMiddleware[] = [];
+        for (const middleware of middlewares) {
             if (typeof middleware === 'function') {
-                const wrapper = new class extends EzMiddleware {
+                const holder = new class extends EzMiddleware {
                     execute(request: EzRequest, response: EzResponse): MiddlewareAction | Promise<MiddlewareAction> {
                         return middleware(request, response) || MiddlewareAction.Continue;
                     }
                 };
 
-                converted.push(wrapper);
+                holders.push(holder);
             } else {
-                converted.push(middleware);
+                holders.push(middleware);
             }
         }
 
-        this._children.push(...converted);
+        this._children.push(...holders);
     }
 
     async execute(request: EzRequest, response: EzResponse): Promise<MiddlewareAction> {

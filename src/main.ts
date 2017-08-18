@@ -14,7 +14,6 @@ router.use(() => {
 
 router.use(() => {
     console.log('router middleware');
-    throw new Error('amk');
 });
 router.get('/test/:id', [
     () => {
@@ -31,7 +30,7 @@ router.get('/test/:id', [
     }
 ]);
 
-router.add('/test/:id', '*', [
+router.add('/test/:id', '*',
     () => {
         console.log('before route handler2');
         return MiddlewareAction.SkipAll;
@@ -44,7 +43,7 @@ router.add('/test/:id', '*', [
     () => {
         console.log('after route handler2');
     },
-]);
+);
 
 server.use(() => {
     console.log('last middleware in server');
