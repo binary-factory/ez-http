@@ -1,8 +1,8 @@
 import * as pathToRegexp from 'path-to-regexp';
 import { HttpMethod } from '../core/http-method';
 import { EzMiddlewareHolder } from '../core/middleware-holder';
-import { EzRequest } from '../core/request';
 import { EzRouter } from './router';
+import { EzContext } from '../core/context';
 
 export type EzRoutePath = string | RegExp;
 
@@ -12,11 +12,11 @@ export class EzRoute extends EzMiddlewareHolder {
         super();
     }
 
-    canActivate(request: EzRequest): boolean {
-        if (this.matchPath(request)) {
-            request.dirty = true;
-            if (this.matchMethod(request)) {
-                request.route = this;
+    canActivate(context: EzContext): boolean {
+        if (this.matchPath(context)) {
+            context.plugins.router.dirty = true;
+            if (this.matchMethod(context)) {
+                context.plugins.router.route = this;
                 return true;
             }
         }
@@ -53,10 +53,11 @@ export class EzRoute extends EzMiddlewareHolder {
         return prefixes.join('') + this._path;
     }
 
-    private matchPath(request: EzRequest): boolean {
+    private matchPath(context: EzContext): boolean {
         const compiled = pathToRegexp(this.fullPath);
-        const matches = compiled.exec(request.parsedUrl.path);
+        const matches = compiled.exec(context.url.path);
         if (matches) {
+            /*
             // Fill request params.
             request.params = {};
             for (let i = 1; i < matches.length; i++) {
@@ -66,6 +67,7 @@ export class EzRoute extends EzMiddlewareHolder {
                     request.params[pathKey.name] = match;
                 }
             }
+            */
 
             return true;
         }
@@ -73,11 +75,11 @@ export class EzRoute extends EzMiddlewareHolder {
         return false;
     }
 
-    private matchMethod(request: EzRequest): boolean {
+    private matchMethod(context: EzContext): boolean {
         if (this._method == HttpMethod.All) {
             return true;
         }
 
-        return request.method.toLowerCase() === this._method.toLowerCase();
+        return context.request.method.toLowerCase() === this._method.toLowerCase();
     }
 }

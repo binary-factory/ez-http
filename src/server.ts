@@ -1,6 +1,7 @@
 import * as http from 'http';
-import * as url from 'url';
 import { EzMiddlewareHolder, EzRequest, EzResponse, HttpError, HttpStatusCode } from './core';
+import { EzContext } from './core/context';
+import { EzPluginManager } from './plugins/manager';
 
 export class EzServer extends EzMiddlewareHolder {
     private _server: http.Server;
@@ -10,30 +11,7 @@ export class EzServer extends EzMiddlewareHolder {
         this._server = http.createServer((request: http.IncomingMessage, response: http.ServerResponse) => {
             this.handleRequest(request, response)
                 .catch((err) => {
-                    try {
-                        if (!(err instanceof HttpError)) {
-                            err = new HttpError(HttpStatusCode.InternalServerError, 'unknown error', err);
-                        }
-
-                        if (!response.headersSent) {
-                            response.writeHead(err.statusCode);
-                        }
-
-                        if (!response.finished) {
-                            if (process.env.DEBUG) {
-                                response.end(err.message);
-                            } else {
-                                response.end();
-                            }
-                        }
-
-                        if (process.env.DEBUG) {
-                            console.log('Sending HTTP-Error: ', err.message);
-                            console.log('Related: ', err.relatedError);
-                        }
-                    } catch (ex) {
-                        console.log('error during closing faulty request.');
-                    }
+                    this.handleError(request, response, err);
                 });
         });
     }
@@ -43,30 +21,52 @@ export class EzServer extends EzMiddlewareHolder {
     }
 
     private async handleRequest(request: EzRequest, response: EzResponse) {
-        // Parse URL.
-        try {
-            request.parsedUrl = url.parse(request.url, true);
-        } catch (ex) {
-            throw new HttpError(HttpStatusCode.BadRequest, 'url malformed.', ex);
+        const context = new EzContext(request, response);
+        await context.setup();
+
+        for (const plugin of EzPluginManager.plugins) {
+            await plugin.prepare(context);
         }
 
-        // Call all the middlewares in order.
         await this.execute(request, response);
 
+        for (const plugin of EzPluginManager.plugins) {
+            await plugin.finish(context);
+        }
+
         if (!response.headersSent) {
-            if (request.dirty) {
-                if (request.route) {
-                    response.writeHead(HttpStatusCode.NoContent);
-                } else {
-                    response.writeHead(HttpStatusCode.MethodNotAllowed);
-                }
-            } else {
-                response.writeHead(HttpStatusCode.NotFound);
-            }
+            response.writeHead(HttpStatusCode.NotImplemented);
         }
 
         if (!response.finished) {
             response.end();
+        }
+    }
+
+    private handleError(request: http.IncomingMessage, response: http.ServerResponse, err: any) {
+        try {
+            if (!(err instanceof HttpError)) {
+                err = new HttpError(HttpStatusCode.InternalServerError, 'unknown error', err);
+            }
+
+            if (!response.headersSent) {
+                response.writeHead(err.statusCode);
+            }
+
+            if (!response.finished) {
+                if (process.env.DEBUG) {
+                    response.end(err.message);
+                } else {
+                    response.end();
+                }
+            }
+
+            if (process.env.DEBUG) {
+                console.log('Sending HTTP-Error: ', err.message);
+                console.log('Related: ', err.relatedError);
+            }
+        } catch (ex) {
+            console.log('error during closing faulty request.');
         }
     }
 }

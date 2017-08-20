@@ -1,6 +1,5 @@
 import { EzMiddlewareHolder } from './middleware-holder';
-import { EzRequest } from './request';
-import { EzResponse } from './response';
+import { EzContext } from './context';
 
 export enum MiddlewareAction {
     Continue,
@@ -13,7 +12,7 @@ export type EzMiddlewareExecutionResult = MiddlewareAction | Promise<MiddlewareA
 export type EzMiddlewareLike = EzMiddleware | EzMiddlewareFunc
 
 export interface EzMiddlewareFunc {
-    (request: EzRequest, response: EzResponse): EzMiddlewareExecutionResult | void;
+    (context: EzContext): EzMiddlewareExecutionResult | void;
 }
 
 
@@ -21,16 +20,16 @@ export abstract class EzMiddleware {
 
     protected _parent: EzMiddlewareHolder;
 
-    abstract execute(request: EzRequest, response: EzResponse): EzMiddlewareExecutionResult;
+    abstract execute(context: EzContext): EzMiddlewareExecutionResult;
 
-    setup(request: EzRequest): void | Promise<void> {
+    setup(context: EzContext): void | Promise<void> {
     }
 
-    canActivate(request: EzRequest): boolean | Promise<boolean> {
+    canActivate(context: EzContext): boolean | Promise<boolean> {
         return true;
     }
 
-    teardown(request: EzRequest) {
+    teardown(context: EzContext) {
     }
 
     get parent(): EzMiddlewareHolder {

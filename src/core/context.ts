@@ -1,36 +1,24 @@
 import * as url from 'url';
 import { HttpStatusCode } from './http-status-code';
-import { EzRequest } from './request';
-import { EzResponse } from './response';
 import * as http from 'http';
-
-export interface EzContextPlugin {
-
-}
-
-const _plugins: any = [];
-
-export function registerPlugin(factory: any) {
-    _plugins.push(factory);
-}
+import { EzPluginManager } from '../plugins/manager';
+import { EzContextPlugins } from '../plugins/context';
 
 export class EzContext {
 
     private _url: url.Url;
 
-    private _dirty: boolean;
-
-    private _plugins: EzContextPlugin;
+    private _plugins: EzContextPlugins;
 
     constructor(private _request: http.IncomingMessage, private _response: http.ServerResponse) {
-        (<any>this._plugins) = {};
-        for (const plugin of _plugins) {
-            plugin(this);
-        }
     }
 
-    setup() {
-        console.log('original setup');
+    async setup() {
+        this._url = url.parse(this._request.url);
+
+        // Setup the plugins.
+        const setups =  EzPluginManager.plugins.map((plugin) => plugin.setupContext);
+        await Promise.all(setups);
     }
 
     json(obj: any) {
@@ -38,15 +26,19 @@ export class EzContext {
         this.response.write(JSON.parse(obj));
     }
 
-    get request(): EzRequest {
+    get request(): http.IncomingMessage {
         return this._request;
     }
 
-    get response(): EzResponse {
+    get response(): http.ServerResponse {
         return this._response;
     }
 
-    get plugins(): EzContextPlugin {
+    get url(): url.Url {
+        return this._url;
+    }
+
+    get plugins(): EzContextPlugins {
         return this._plugins;
     }
 }

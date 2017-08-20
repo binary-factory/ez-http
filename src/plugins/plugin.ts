@@ -10,5 +10,11 @@ export abstract class EzPlugin {
         return this._name;
     }
 
-    abstract setupContext(context: EzContext): void;
+    abstract activate(): void | Promise<void>;
+
+    abstract setupContext(context: EzContext): void | Promise<void>;
+
+    abstract prepare(context: EzContext): void | Promise<void>;
+
+    abstract finish(context: EzContext): void | Promise<void>;
 }

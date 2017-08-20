@@ -1,8 +1,8 @@
 import { HttpMethod } from '../core/http-method';
 import { EzMiddleware, EzMiddlewareLike } from '../core/middleware';
 import { EzMiddlewareHolder } from '../core/middleware-holder';
-import { EzRequest } from '../core/request';
 import { EzRoute, EzRoutePath } from './route';
+import { EzContext } from '../core/context';
 
 export class EzRouter extends EzMiddlewareHolder {
 
@@ -35,17 +35,17 @@ export class EzRouter extends EzMiddlewareHolder {
         super.use(...remainder)
     }
 
-    canActivate(request: EzRequest): boolean {
+    canActivate(context: EzContext): boolean {
         this._invokeNext = [];
 
         for (const route of this._routes) {
-            if (route.canActivate(request)) {
+            if (route.canActivate(context)) {
                 this._invokeNext.push(route);
             }
         }
 
         for (const router of this._routers) {
-            if (router.canActivate(request)) {
+            if (router.canActivate(context)) {
                 this._invokeNext.push(router);
             }
         }
@@ -53,7 +53,7 @@ export class EzRouter extends EzMiddlewareHolder {
         return this._invokeNext.length > 0;
     }
 
-    teardown(request: EzRequest) {
+    teardown(context: EzContext) {
         this._invokeNext = [];
     }
 
@@ -86,7 +86,7 @@ export class EzRouter extends EzMiddlewareHolder {
         return this.add(path, HttpMethod.Delete, ...handler);
     }
 
-    protected compose(request: EzRequest): EzMiddleware[] {
+    protected compose(context: EzContext): EzMiddleware[] {
         return [...this._children, ...this._invokeNext];
     }
 

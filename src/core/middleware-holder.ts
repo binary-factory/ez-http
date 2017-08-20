@@ -1,6 +1,5 @@
 import { EzMiddleware, EzMiddlewareLike, MiddlewareAction } from './middleware';
-import { EzRequest } from './request';
-import { EzResponse } from './response';
+import { EzContext } from './context';
 
 export abstract class EzMiddlewareHolder extends EzMiddleware {
 
@@ -12,8 +11,8 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
             if (typeof middleware === 'function') {
                 // Wrap function within anonymous instance of Middleware.
                 const holder = new class extends EzMiddleware {
-                    execute(request: EzRequest, response: EzResponse): MiddlewareAction | Promise<MiddlewareAction> {
-                        return middleware(request, response) || MiddlewareAction.Continue;
+                    execute(context: EzContext): MiddlewareAction | Promise<MiddlewareAction> {
+                        return middleware(context) || MiddlewareAction.Continue;
                     }
                 };
 
@@ -31,33 +30,33 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
         this._children.push(...holders);
     }
 
-    async execute(request: EzRequest, response: EzResponse): Promise<MiddlewareAction> {
-        return this.executeMultiple(request, response, this.compose(request));
+    async execute(context: EzContext): Promise<MiddlewareAction> {
+        return this.executeMultiple(context, this.compose(context));
     }
 
-    async executeMultiple(request: EzRequest, response: EzResponse, children: EzMiddleware[]): Promise<MiddlewareAction> {
+    async executeMultiple(context: EzContext, children: EzMiddleware[]): Promise<MiddlewareAction> {
         let action: MiddlewareAction = MiddlewareAction.Continue;
 
         for (const child of children) {
 
-            await child.setup(request);
+            await child.setup(context);
 
-            if (child.canActivate(request)) {
+            if (child.canActivate(context)) {
 
-                action = await child.execute(request, response);
+                action = await child.execute(context);
                 if (action !== MiddlewareAction.Continue) {
                     return this.gradateAction(action);
                 }
 
             }
 
-            await child.teardown(request);
+            await child.teardown(context);
         }
 
         return MiddlewareAction.Continue;
     }
 
-    protected compose(request: EzRequest): EzMiddleware[] {
+    protected compose(context: EzContext): EzMiddleware[] {
         return this._children;
     }
 
