@@ -3,6 +3,7 @@ import { EzRoute } from './route';
 export class RouterContext {
     private _dirty: boolean;
     private _route: EzRoute;
+    private _params: any;
 
     get dirty(): boolean {
         return this._dirty;
@@ -18,5 +19,13 @@ export class RouterContext {
 
     set route(value: EzRoute) {
         this._route = value;
+    }
+
+    get params(): any {
+        return this._params;
+    }
+
+    set params(value: any) {
+        this._params = value;
     }
 }

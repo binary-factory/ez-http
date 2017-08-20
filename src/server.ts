@@ -1,5 +1,5 @@
 import * as http from 'http';
-import { EzMiddlewareHolder, EzRequest, EzResponse, HttpError, HttpStatusCode } from './core';
+import { EzMiddlewareHolder, HttpError, HttpStatusCode } from './core';
 import { EzContext } from './core/context';
 import { EzPluginManager } from './plugins/manager';
 
@@ -20,7 +20,7 @@ export class EzServer extends EzMiddlewareHolder {
         this._server.listen(port);
     }
 
-    private async handleRequest(request: EzRequest, response: EzResponse) {
+    private async handleRequest(request: http.IncomingMessage, response: http.ServerResponse) {
         const context = new EzContext(request, response);
         await context.setup();
 
@@ -28,7 +28,7 @@ export class EzServer extends EzMiddlewareHolder {
             await plugin.prepare(context);
         }
 
-        await this.execute(request, response);
+        await this.execute(context);
 
         for (const plugin of EzPluginManager.plugins) {
             await plugin.finish(context);

@@ -5,7 +5,7 @@ export namespace EzPluginManager {
 
     export async function registerPlugin(plugin: EzPlugin) {
         await plugin.activate(); //TODO: Rethrow semantic error.
-        this.plugins.push(plugins);
+        this.plugins.push(plugin);
     }
 
 }

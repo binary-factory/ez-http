@@ -57,17 +57,15 @@ export class EzRoute extends EzMiddlewareHolder {
         const compiled = pathToRegexp(this.fullPath);
         const matches = compiled.exec(context.url.path);
         if (matches) {
-            /*
             // Fill request params.
-            request.params = {};
+            context.plugins.router.params = {};
             for (let i = 1; i < matches.length; i++) {
                 const match = matches[i];
                 if (match) {
                     const pathKey = compiled.keys[i - 1];
-                    request.params[pathKey.name] = match;
+                    context.plugins.router.params[pathKey.name] = match;
                 }
             }
-            */
 
             return true;
         }

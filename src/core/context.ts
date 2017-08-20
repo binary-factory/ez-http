@@ -15,10 +15,12 @@ export class EzContext {
 
     async setup() {
         this._url = url.parse(this._request.url);
+        (<any>this._plugins) = {};
 
         // Setup the plugins.
-        const setups =  EzPluginManager.plugins.map((plugin) => plugin.setupContext);
-        await Promise.all(setups);
+        for (const plugin of EzPluginManager.plugins) {
+            await plugin.setupContext(this);
+        }
     }
 
     json(obj: any) {

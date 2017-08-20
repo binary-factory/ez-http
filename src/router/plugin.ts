@@ -3,7 +3,7 @@ import { EzContext } from '../core/context';
 import { RouterContext } from './context';
 import { HttpStatusCode } from '../core/http-status-code';
 
-export class RouterPlugin extends EzPlugin {
+export class EzRouterPlugin extends EzPlugin {
 
     constructor() {
         super('ez-router');
@@ -17,24 +17,24 @@ export class RouterPlugin extends EzPlugin {
     }
 
     prepare(context: EzContext): void | Promise<void> {
-
     }
 
     finish(context: EzContext): void | Promise<void> {
-        if (!context.response.headersSent) {
+        const response = context.response;
+        if (response.headersSent) {
             if (context.plugins.router.dirty) {
                 if (context.plugins.router.route) {
-                    context.response.writeHead(HttpStatusCode.NoContent);
+                    response.writeHead(HttpStatusCode.NoContent);
                 } else {
-                    context.response.writeHead(HttpStatusCode.MethodNotAllowed);
+                    response.writeHead(HttpStatusCode.MethodNotAllowed);
                 }
             } else {
-                context.response.writeHead(HttpStatusCode.NotFound);
+                response.writeHead(HttpStatusCode.NotFound);
             }
         }
 
-        if (!context.response.finished) {
-            context.response.end();
+        if (!response.finished) {
+            response.end();
         }
     }
 }
