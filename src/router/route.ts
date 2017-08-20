@@ -13,7 +13,6 @@ export class EzRoute extends EzMiddlewareHolder {
     }
 
     canActivate(request: EzRequest): boolean {
-        console.log('canActivate: ' + this.fullPath);
         if (this.matchPath(request)) {
             request.dirty = true;
             if (this.matchMethod(request)) {
@@ -43,8 +42,8 @@ export class EzRoute extends EzMiddlewareHolder {
 
     get fullPath(): EzRoutePath {
         const prefixes = this.parents
-            .filter((holder) => {
-                return holder instanceof EzRouter;
+            .filter((parent) => {
+                return parent instanceof EzRouter;
             })
             .map((router: EzRouter) => {
                 return router.prefix;

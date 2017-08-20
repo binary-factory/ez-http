@@ -7,7 +7,9 @@ import { EzRoute, EzRoutePath } from './route';
 export class EzRouter extends EzMiddlewareHolder {
 
     private _routes: EzRoute[] = [];
+
     private _routers: EzRouter[] = [];
+
     private _invokeNext: (EzRoute | EzRouter)[] = [];
 
     constructor(private _prefix?: string) {
@@ -20,9 +22,11 @@ export class EzRouter extends EzMiddlewareHolder {
             if (middleware instanceof EzRoute) {
                 middleware.parent = this;
                 this._routes.push(middleware);
+
             } else if (middleware instanceof EzRouter) {
                 middleware.parent = this;
                 this._routers.push(middleware);
+
             } else {
                 remainder.push(middleware);
             }
@@ -62,23 +66,23 @@ export class EzRouter extends EzMiddlewareHolder {
         return route;
     }
 
-    get(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+    get(path: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Get, ...handler);
     }
 
-    head(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+    head(path: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Head, ...handler);
     }
 
-    post(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+    post(path: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Post, ...handler);
     }
 
-    put(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+    put(path: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Put, ...handler);
     }
 
-    del(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+    del(path: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Delete, ...handler);
     }
 

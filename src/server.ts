@@ -54,7 +54,15 @@ export class EzServer extends EzMiddlewareHolder {
         await this.execute(request, response);
 
         if (!response.headersSent) {
-            response.writeHead(HttpStatusCode.NotFound);
+            if (request.dirty) {
+                if (request.route) {
+                    response.writeHead(HttpStatusCode.NoContent);
+                } else {
+                    response.writeHead(HttpStatusCode.MethodNotAllowed);
+                }
+            } else {
+                response.writeHead(HttpStatusCode.NotFound);
+            }
         }
 
         if (!response.finished) {
