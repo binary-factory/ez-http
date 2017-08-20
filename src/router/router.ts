@@ -1,45 +1,89 @@
-import { EzMiddlewareHolder } from '../core/middleware-holder';
-import { EzMiddleware, EzMiddlewareLike } from '../core/middleware';
-import { EzRoute } from './route';
-import * as pathToRegexp from 'path-to-regexp';
 import { HttpMethod } from '../core/http-method';
+import { EzMiddleware, EzMiddlewareLike } from '../core/middleware';
+import { EzMiddlewareHolder } from '../core/middleware-holder';
+import { EzRequest } from '../core/request';
+import { EzRoute, EzRoutePath } from './route';
 
 export class EzRouter extends EzMiddlewareHolder {
 
     private _routes: EzRoute[] = [];
+    private _routers: EzRouter[] = [];
+    private _invokeNext: (EzRoute | EzRouter)[] = [];
 
     constructor(private _prefix?: string) {
         super();
     }
 
-    add(path: pathToRegexp.Path, method: HttpMethod | string, ...handler: EzMiddlewareLike[]) {
+    use(...middlewares: EzMiddlewareLike[]) {
+        const remainder: EzMiddlewareLike[] = [];
+        for (const middleware of middlewares) {
+            if (middleware instanceof EzRoute) {
+                middleware.parent = this;
+                this._routes.push(middleware);
+            } else if (middleware instanceof EzRouter) {
+                middleware.parent = this;
+                this._routers.push(middleware);
+            } else {
+                remainder.push(middleware);
+            }
+        }
+
+        super.use(...remainder)
+    }
+
+    canActivate(request: EzRequest): boolean {
+        this._invokeNext = [];
+
+        for (const route of this._routes) {
+            if (route.canActivate(request)) {
+                this._invokeNext.push(route);
+            }
+        }
+
+        for (const router of this._routers) {
+            if (router.canActivate(request)) {
+                this._invokeNext.push(router);
+            }
+        }
+
+        return this._invokeNext.length > 0;
+    }
+
+    teardown(request: EzRequest) {
+        this._invokeNext = [];
+    }
+
+    add(path: EzRoutePath, method: HttpMethod | string, ...handler: EzMiddlewareLike[]): EzRoute {
         const route = new EzRoute(path, method);
+
         route.use(...handler);
-        this._routes.push(route);
+        this.use(route);
+
+        return route;
     }
 
-    get (path: pathToRegexp.Path, handler: EzMiddlewareLike[]) {
-        this.add(path, HttpMethod.Get, ...handler);
+    get(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+        return this.add(path, HttpMethod.Get, ...handler);
     }
 
-    head(path: pathToRegexp.Path, handler: EzMiddlewareLike[]) {
-        this.add(path, HttpMethod.Head, ...handler);
+    head(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+        return this.add(path, HttpMethod.Head, ...handler);
     }
 
-    post(path: pathToRegexp.Path, handler: EzMiddlewareLike[]) {
-        this.add(path, HttpMethod.Post, ...handler);
+    post(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+        return this.add(path, HttpMethod.Post, ...handler);
     }
 
-    put(path: pathToRegexp.Path, handler: EzMiddlewareLike[]) {
-        this.add(path, HttpMethod.Put, ...handler);
+    put(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+        return this.add(path, HttpMethod.Put, ...handler);
     }
 
-    del(path: pathToRegexp.Path, handler: EzMiddlewareLike[]) {
-        this.add(path, HttpMethod.Delete, ...handler);
+    del(path: EzRoutePath, handler: EzMiddlewareLike[]): EzRoute {
+        return this.add(path, HttpMethod.Delete, ...handler);
     }
 
-    protected compose(): EzMiddleware[] {
-        return this._routes;
+    protected compose(request: EzRequest): EzMiddleware[] {
+        return [...this._children, ...this._invokeNext];
     }
 
     get prefix(): string {
@@ -48,27 +92,5 @@ export class EzRouter extends EzMiddlewareHolder {
 
     set prefix(value: string) {
         this._prefix = value;
-    }
-
-    get rootRouter(): EzRouter {
-        let router: EzRouter = this;
-        while (router.parent instanceof EzRouter) {
-            router = router.parent;
-        }
-
-        return router;
-    }
-
-    get fullPrefix(): string {
-        let prefixes: string[] = [this._prefix];
-        let router: EzRouter = this;
-        while (router.parent instanceof EzRouter) {
-            router = router.parent;
-            if (router.prefix) {
-                prefixes.push(router.prefix);
-            }
-        }
-
-        return prefixes.reverse().join('/');
     }
 }

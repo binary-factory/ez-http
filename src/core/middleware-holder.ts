@@ -1,17 +1,16 @@
 import { EzMiddleware, EzMiddlewareLike, MiddlewareAction } from './middleware';
 import { EzRequest } from './request';
 import { EzResponse } from './response';
-import { HttpError } from './http-error';
-import { HttpStatusCode } from './http-status-code';
 
 export abstract class EzMiddlewareHolder extends EzMiddleware {
 
-    private _children: EzMiddleware[] = [];
+    protected _children: EzMiddleware[] = [];
 
     use(...middlewares: EzMiddlewareLike[]) {
         const holders: EzMiddleware[] = [];
         for (const middleware of middlewares) {
             if (typeof middleware === 'function') {
+                // Wrap function within anonymous instance of Middleware.
                 const holder = new class extends EzMiddleware {
                     execute(request: EzRequest, response: EzResponse): MiddlewareAction | Promise<MiddlewareAction> {
                         return middleware(request, response) || MiddlewareAction.Continue;
@@ -24,7 +23,7 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
             }
         }
 
-        // Set parents.
+        // Set parent for all.
         for (const holder of holders) {
             holder.parent = this;
         }
@@ -33,50 +32,42 @@ export abstract class EzMiddlewareHolder extends EzMiddleware {
     }
 
     async execute(request: EzRequest, response: EzResponse): Promise<MiddlewareAction> {
-        for (const child of this.compose()) {
+        return this.executeMultiple(request, response, this.compose(request));
+    }
 
-            try {
-                await child.setup(request);
-            } catch (ex) {
-                throw this.wrapError(ex, 'middleware setup failed');
-            }
+    async executeMultiple(request: EzRequest, response: EzResponse, children: EzMiddleware[]): Promise<MiddlewareAction> {
+        let action: MiddlewareAction = MiddlewareAction.Continue;
+
+        for (const child of children) {
+
+            await child.setup(request);
 
             if (child.canActivate(request)) {
-                try {
-                    const action = await child.execute(request, response);
-                    if (MiddlewareAction.Continue) {
-                        // Do nothing :).
-                    } else if (action === MiddlewareAction.SkipHolder) {
-                        console.log('middleware skips this holder.');
-                        return MiddlewareAction.Continue;
-                    } else if (action === MiddlewareAction.SkipAll) {
-                        console.log('middleware skips all.');
-                        return MiddlewareAction.SkipAll;
-                    }
-                } catch (ex) {
-                    throw this.wrapError(ex, 'middleware execution failed');
+
+                action = await child.execute(request, response);
+                if (action !== MiddlewareAction.Continue) {
+                    return this.gradateAction(action);
                 }
+
             }
 
-            try {
-                await child.teardown();
-            } catch (ex) {
-                throw this.wrapError(ex, 'middleware teardown failed');
-            }
+            await child.teardown(request);
         }
 
         return MiddlewareAction.Continue;
     }
 
-    protected compose(): EzMiddleware[] {
+    protected compose(request: EzRequest): EzMiddleware[] {
         return this._children;
     }
 
-    private wrapError(err: Error, message?: string): HttpError {
-        if (err instanceof HttpError) {
-            return err;
-        } else {
-            return new HttpError(HttpStatusCode.InternalServerError, message, err);
+    private gradateAction(action: MiddlewareAction): MiddlewareAction {
+        if (MiddlewareAction.Continue) {
+            return MiddlewareAction.Continue;
+        } else if (action === MiddlewareAction.SkipHolder) {
+            return MiddlewareAction.Continue;
+        } else if (action === MiddlewareAction.SkipAll) {
+            return MiddlewareAction.SkipAll;
         }
     }
 

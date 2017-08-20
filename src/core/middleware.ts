@@ -1,6 +1,6 @@
+import { EzMiddlewareHolder } from './middleware-holder';
 import { EzRequest } from './request';
 import { EzResponse } from './response';
-import { EzMiddlewareHolder } from './middleware-holder';
 
 export enum MiddlewareAction {
     Continue,
@@ -16,9 +16,12 @@ export interface EzMiddlewareFunc {
     (request: EzRequest, response: EzResponse): EzMiddlewareExecutionResult | void;
 }
 
+
 export abstract class EzMiddleware {
 
     protected _parent: EzMiddlewareHolder;
+
+    abstract execute(request: EzRequest, response: EzResponse): EzMiddlewareExecutionResult;
 
     setup(request: EzRequest): void | Promise<void> {
     }
@@ -27,9 +30,7 @@ export abstract class EzMiddleware {
         return true;
     }
 
-    abstract execute(request: EzRequest, response: EzResponse): EzMiddlewareExecutionResult;
-
-    teardown() {
+    teardown(request: EzRequest) {
     }
 
     get parent(): EzMiddlewareHolder {
@@ -38,5 +39,17 @@ export abstract class EzMiddleware {
 
     set parent(value: EzMiddlewareHolder) {
         this._parent = value;
+    }
+
+    get parents(): EzMiddlewareHolder[] {
+        const holders: EzMiddlewareHolder[] = [];
+        let currentHolder: EzMiddlewareHolder = this.parent;
+        while (currentHolder) {
+            holders.push(currentHolder);
+
+            currentHolder = currentHolder.parent;
+        }
+
+        return holders;
     }
 }

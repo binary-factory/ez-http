@@ -1,18 +1,19 @@
 import * as pathToRegexp from 'path-to-regexp';
-import { EzRequest } from '../core/request';
 import { HttpMethod } from '../core/http-method';
 import { EzMiddlewareHolder } from '../core/middleware-holder';
+import { EzRequest } from '../core/request';
+import { EzRouter } from './router';
+
+export type EzRoutePath = string | RegExp;
 
 export class EzRoute extends EzMiddlewareHolder {
 
-    constructor(private _path: pathToRegexp.Path, private _method: HttpMethod | string) {
+    constructor(private _path: EzRoutePath, private _method: HttpMethod | string) {
         super();
-        this._pathRegExp = pathToRegexp(this._path);
     }
 
-    private _pathRegExp: pathToRegexp.PathRegExp;
-
     canActivate(request: EzRequest): boolean {
+        console.log('canActivate: ' + this.fullPath);
         if (this.matchPath(request)) {
             request.dirty = true;
             if (this.matchMethod(request)) {
@@ -24,19 +25,11 @@ export class EzRoute extends EzMiddlewareHolder {
         return false;
     }
 
-    get pathRegExp(): pathToRegexp.PathRegExp {
-        return this._pathRegExp;
-    }
-
-    set pathRegExp(value: pathToRegexp.PathRegExp) {
-        this._pathRegExp = value;
-    }
-
-    get path(): pathToRegexp.Path {
+    get path(): EzRoutePath {
         return this._path;
     }
 
-    set path(value: pathToRegexp.Path) {
+    set path(value: EzRoutePath) {
         this._path = value;
     }
 
@@ -48,17 +41,29 @@ export class EzRoute extends EzMiddlewareHolder {
         this._method = value;
     }
 
+    get fullPath(): EzRoutePath {
+        const prefixes = this.parents
+            .filter((holder) => {
+                return holder instanceof EzRouter;
+            })
+            .map((router: EzRouter) => {
+                return router.prefix;
+            })
+            .reverse();
+
+        return prefixes.join('') + this._path;
+    }
+
     private matchPath(request: EzRequest): boolean {
-        const matches = this._pathRegExp.exec(request.parsedUrl.path);
+        const compiled = pathToRegexp(this.fullPath);
+        const matches = compiled.exec(request.parsedUrl.path);
         if (matches) {
-            console.log(matches[0]);
-            console.log(request.url);
             // Fill request params.
             request.params = {};
             for (let i = 1; i < matches.length; i++) {
                 const match = matches[i];
                 if (match) {
-                    const pathKey = this._pathRegExp.keys[i - 1];
+                    const pathKey = compiled.keys[i - 1];
                     request.params[pathKey.name] = match;
                 }
             }
