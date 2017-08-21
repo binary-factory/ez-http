@@ -1,8 +1,8 @@
 import * as pathToRegexp from 'path-to-regexp';
-import { HttpMethod } from '../core/http-method';
-import { EzMiddlewareHolder } from '../core/middleware-holder';
+import { HttpMethod } from '../http/http-method';
+import { EzMiddlewareHolder } from '../middleware/middleware-holder';
 import { EzRouter } from './router';
-import { EzContext } from '../core/context';
+import { EzContext } from '../middleware/context';
 
 export type EzRoutePath = string | RegExp;
 
@@ -14,9 +14,9 @@ export class EzRoute extends EzMiddlewareHolder {
 
     canActivate(context: EzContext): boolean {
         if (this.matchPath(context)) {
-            context.plugins.router.dirty = true;
+            context.router.dirty = true;
             if (this.matchMethod(context)) {
-                context.plugins.router.route = this;
+                context.router.route = this;
                 return true;
             }
         }
@@ -58,12 +58,12 @@ export class EzRoute extends EzMiddlewareHolder {
         const matches = compiled.exec(context.url.path);
         if (matches) {
             // Fill request params.
-            context.plugins.router.params = {};
+            context.params = {};
             for (let i = 1; i < matches.length; i++) {
                 const match = matches[i];
                 if (match) {
                     const pathKey = compiled.keys[i - 1];
-                    context.plugins.router.params[pathKey.name] = match;
+                    context.params[pathKey.name] = match;
                 }
             }
 

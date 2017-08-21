@@ -1,29 +1,22 @@
 import { EzPlugin } from '../plugins/plugin';
-import { EzContext } from '../core/context';
-import { RouterContext } from './context';
-import { HttpStatusCode } from '../core/http-status-code';
+import { EzContext } from '../middleware/context';
+import { RouterContext } from './router-context';
+import { HttpStatusCode } from '../http/http-status-code';
 
 export class EzRouterPlugin extends EzPlugin {
-
-    constructor() {
-        super('ez-router');
-    }
 
     activate(): void | Promise<void> {
     }
 
-    setupContext(context: EzContext): void | Promise<void> {
-        context.plugins.router = new RouterContext();
-    }
-
     prepare(context: EzContext): void | Promise<void> {
+        context.router = new RouterContext();
     }
 
     finish(context: EzContext): void | Promise<void> {
         const response = context.response;
         if (response.headersSent) {
-            if (context.plugins.router.dirty) {
-                if (context.plugins.router.route) {
+            if (context.router.dirty) {
+                if (context.router.route) {
                     response.writeHead(HttpStatusCode.NoContent);
                 } else {
                     response.writeHead(HttpStatusCode.MethodNotAllowed);

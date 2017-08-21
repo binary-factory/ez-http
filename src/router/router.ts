@@ -1,8 +1,8 @@
-import { HttpMethod } from '../core/http-method';
-import { EzMiddleware, EzMiddlewareLike } from '../core/middleware';
-import { EzMiddlewareHolder } from '../core/middleware-holder';
+import { HttpMethod } from '../http/http-method';
+import { EzMiddleware, EzMiddlewareLike } from '../middleware/middleware';
+import { EzMiddlewareHolder } from '../middleware/middleware-holder';
 import { EzRoute, EzRoutePath } from './route';
-import { EzContext } from '../core/context';
+import { EzContext } from '../middleware/context';
 
 export class EzRouter extends EzMiddlewareHolder {
 
