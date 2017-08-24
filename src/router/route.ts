@@ -14,7 +14,7 @@ export class EzRoute extends EzMiddlewareHolder {
 
     canActivate(context: EzContext): boolean {
         if (this.matchPath(context)) {
-            context.router.dirty = true;
+            context.router.dirty.push(this);
             if (this.matchMethod(context)) {
                 context.router.route = this;
                 return true;

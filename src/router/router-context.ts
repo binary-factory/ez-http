@@ -1,14 +1,14 @@
 import { EzRoute } from './route';
 
 export class RouterContext {
-    private _dirty: boolean;
+    private _dirty: EzRoute[] = [];
     private _route: EzRoute;
 
-    get dirty(): boolean {
+    get dirty(): EzRoute[] {
         return this._dirty;
     }
 
-    set dirty(value: boolean) {
+    set dirty(value: EzRoute[]) {
         this._dirty = value;
     }
 

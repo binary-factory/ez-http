@@ -17,6 +17,10 @@ export class EzServer extends EzMiddlewareHolder {
         });
     }
 
+    register() {
+
+    }
+
     listen(port: number) {
         this._server.listen(port, () => {
             // TODO: Resolve Promise.
