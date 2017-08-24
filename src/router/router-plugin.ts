@@ -14,7 +14,7 @@ export class EzRouterPlugin extends EzPlugin {
 
     finish(context: EzContext): void | Promise<void> {
         const response = context.response;
-        if (response.headersSent) {
+        if (!response.headersSent) {
             if (context.router.dirty) {
                 if (context.router.route) {
                     response.writeHead(HttpStatusCode.NoContent);
