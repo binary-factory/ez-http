@@ -1,5 +1,6 @@
 export * from './decorators';
 export * from './http';
+export * from './inversify';
 export * from './metadata';
 export * from './middleware';
 export * from './plugins';

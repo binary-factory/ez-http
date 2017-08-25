@@ -12,7 +12,7 @@ export class EzContext {
 
     json(obj: any) {
         this._response.writeHead(HttpStatusCode.OK, {'content-type': 'application/json'});
-        this.response.write(JSON.parse(obj));
+        this.response.write(JSON.stringify(obj));
     }
 
     get request(): http.IncomingMessage {

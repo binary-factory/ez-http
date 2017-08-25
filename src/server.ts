@@ -3,6 +3,13 @@ import { HttpError, HttpStatusCode } from './http';
 import { EzContext } from './middleware/context';
 import { EzMiddlewareHolder } from './middleware/middleware-holder';
 import { EzPluginManager } from './plugins/plugin-manager';
+import { Container } from 'inversify';
+import { Controller } from './inversify/controller';
+import { Type } from './inversify/type';
+import { MetadataKey } from './metadata/metadata-key';
+import { ControllerMetadata } from './metadata/controller';
+import { EzRouter } from './router/router';
+import { ControllerMethodMetadata } from './metadata/controller-method';
 
 export class EzServer extends EzMiddlewareHolder {
     private _server: http.Server;
@@ -17,8 +24,22 @@ export class EzServer extends EzMiddlewareHolder {
         });
     }
 
-    register() {
+    registerContainer(container: Container) {
+        let controllers: Controller[] = container.getAll<Controller>(Type.Controller);
+        for (const controller of controllers) {
+            const controllerMetadata: ControllerMetadata = Reflect.getOwnMetadata(MetadataKey.Controller, controller.constructor);
+            if (!controllerMetadata) {
+                console.warn('class was not decorated as controller.');
+                continue;
+            }
+            const router = new EzRouter(controllerMetadata.prefix);
+            this.use(router);
 
+            const controllerMethodMetadata: ControllerMethodMetadata[] = Reflect.getOwnMetadata(MetadataKey.ControllerMethod, controller.constructor);
+            for (const methodMetadata of controllerMethodMetadata) {
+                router.add(methodMetadata.path, methodMetadata.method,methodMetadata.target[methodMetadata.propertyKey]);
+            }
+        }
     }
 
     listen(port: number) {
