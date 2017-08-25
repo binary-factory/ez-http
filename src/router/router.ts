@@ -66,23 +66,23 @@ export class EzRouter extends EzMiddlewareHolder {
         return route;
     }
 
-    get(path?: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
+    get (path: EzRoutePath = '/', ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Get, ...handler);
     }
 
-    head(path?: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
+    head(path: EzRoutePath = '/', ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Head, ...handler);
     }
 
-    post(path?: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
+    post(path: EzRoutePath = '/', ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Post, ...handler);
     }
 
-    put(path?: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
+    put(path: EzRoutePath = '/', ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Put, ...handler);
     }
 
-    del(path?: EzRoutePath, ...handler: EzMiddlewareLike[]): EzRoute {
+    del(path: EzRoutePath = '/', ...handler: EzMiddlewareLike[]): EzRoute {
         return this.add(path, HttpMethod.Delete, ...handler);
     }
 

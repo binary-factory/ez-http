@@ -7,9 +7,9 @@ import { Container } from 'inversify';
 import { Controller } from './inversify/controller';
 import { Type } from './inversify/type';
 import { MetadataKey } from './metadata/metadata-key';
-import { ControllerMetadata } from './metadata/controller';
+import { ControllerMetadata } from './metadata/controller-metadata';
 import { EzRouter } from './router/router';
-import { ControllerMethodMetadata } from './metadata/controller-method';
+import { ControllerMethodMetadata } from './metadata/controller-method-metadata';
 
 export class EzServer extends EzMiddlewareHolder {
     private _server: http.Server;

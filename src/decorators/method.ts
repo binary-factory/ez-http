@@ -1,5 +1,5 @@
 import { MetadataKey } from '../metadata/metadata-key';
-import { ControllerMethodMetadata } from '../metadata/controller-method';
+import { ControllerMethodMetadata } from '../metadata/controller-method-metadata';
 import { EzRoutePath } from '../router/route';
 
 export function method(method: string, path?: EzRoutePath): any {
