@@ -6,7 +6,12 @@
     "outDir": "dist",
     "noImplicitAny": true,
     "declaration": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": [
+      "reflect-metadata",
+      "inversify",
+      "node"
+    ]
   },
   "exclude": [
     "node_modules",

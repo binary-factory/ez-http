@@ -3,13 +3,14 @@ import { HttpError, HttpStatusCode } from './http';
 import { EzContext } from './middleware/context';
 import { EzMiddlewareHolder } from './middleware/middleware-holder';
 import { EzPluginManager } from './plugins/plugin-manager';
-import { Container } from 'inversify';
 import { Controller } from './inversify/controller';
 import { Type } from './inversify/type';
 import { MetadataKey } from './metadata/metadata-key';
 import { ControllerMetadata } from './metadata/controller-metadata';
 import { EzRouter } from './router/router';
 import { ControllerMethodMetadata } from './metadata/controller-method-metadata';
+import * as inversify from "inversify";
+
 
 export class EzServer extends EzMiddlewareHolder {
     private _server: http.Server;
@@ -24,7 +25,7 @@ export class EzServer extends EzMiddlewareHolder {
         });
     }
 
-    registerContainer(container: Container) {
+    registerContainer(container: inversify.interfaces.Container) {
         let controllers: Controller[] = container.getAll<Controller>(Type.Controller);
         for (const controller of controllers) {
             const controllerMetadata: ControllerMetadata = Reflect.getOwnMetadata(MetadataKey.Controller, controller.constructor);
@@ -37,7 +38,7 @@ export class EzServer extends EzMiddlewareHolder {
 
             const controllerMethodMetadata: ControllerMethodMetadata[] = Reflect.getOwnMetadata(MetadataKey.ControllerMethod, controller.constructor);
             for (const methodMetadata of controllerMethodMetadata) {
-                router.add(methodMetadata.path, methodMetadata.method,methodMetadata.target[methodMetadata.propertyKey]);
+                router.add(methodMetadata.path, methodMetadata.method, methodMetadata.target[methodMetadata.propertyKey]);
             }
         }
     }

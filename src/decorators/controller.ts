@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { MetadataKey } from '../metadata/metadata-key';
 import { ControllerMetadata } from '../metadata/controller-metadata';
 import { injectable } from 'inversify';
