@@ -1,9 +1,10 @@
 import { MetadataKey } from '../metadata/metadata-key';
 import { ControllerMethodMetadata } from '../metadata/controller-method-metadata';
 import { EzRoutePath } from '../router/route';
+import { EzMiddlewareLike } from '../middleware/middleware';
 
 export function method(method: string, path?: EzRoutePath): any {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return function (target: EzMiddlewareLike, propertyKey: string, descriptor: PropertyDescriptor) {
         const meta: ControllerMethodMetadata = {
             target,
             propertyKey,
