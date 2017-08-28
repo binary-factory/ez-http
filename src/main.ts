@@ -1,5 +1,6 @@
 export * from './controller';
 export * from './decorators';
+export * from './decorators/params';
 export * from './http';
 export * from './metadata';
 export * from './middleware';

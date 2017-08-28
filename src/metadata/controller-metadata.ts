@@ -1,5 +1,6 @@
-import { Metadata } from './metadata';
+import { EzController } from '../controller';
 
-export interface ControllerMetadata extends Metadata {
+export interface ControllerMetadata {
+    target: EzController
     prefix: string;
 }

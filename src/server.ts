@@ -3,12 +3,13 @@ import { HttpError, HttpStatusCode } from './http';
 import { EzContext } from './middleware/context';
 import { EzMiddlewareHolder } from './middleware/middleware-holder';
 import { EzPluginManager } from './plugins/plugin-manager';
-import { Controller } from './controller';
+import { EzController } from './controller';
 import { MetadataKey } from './metadata/metadata-key';
 import { ControllerMetadata } from './metadata/controller-metadata';
 import { EzRouter } from './router/router';
 import { ControllerMethodMetadata } from './metadata/controller-method-metadata';
 import { EzServerConfiguration } from './server-configuration';
+import { ControllerMethodParameterMetadata } from './metadata/controller-method-parameter-metadata';
 
 
 export class EzServer extends EzMiddlewareHolder {
@@ -24,19 +25,46 @@ export class EzServer extends EzMiddlewareHolder {
         });
     }
 
-    registerControllers(controllers: Controller[]) {
+    registerControllers(controllers: EzController[]) {
         for (const controller of controllers) {
             const controllerMetadata: ControllerMetadata = Reflect.getOwnMetadata(MetadataKey.Controller, controller.constructor);
             if (!controllerMetadata) {
                 console.warn('class was not decorated as controller.');
                 continue;
             }
+
+            // Each controller will be a EzRouter instance.
             const router = new EzRouter(controllerMetadata.prefix);
             this.use(router);
 
-            const controllerMethodMetadata: ControllerMethodMetadata[] = Reflect.getOwnMetadata(MetadataKey.ControllerMethod, controller.constructor);
+            const controllerMethodMetadata: ControllerMethodMetadata[] = Reflect.getOwnMetadata(MetadataKey.ControllerMethods, controller.constructor);
             for (const methodMetadata of controllerMethodMetadata) {
-                router.add(methodMetadata.path, methodMetadata.method, methodMetadata.target[methodMetadata.propertyKey]);
+                const requestHandler = methodMetadata.target[methodMetadata.propertyKey];
+                const requestHandlerName = methodMetadata.propertyKey;
+
+                // Insert injection layer.
+                const injectionLayer = async (context: EzContext) => {
+                    const args: any[] = [];
+                    const paramMap: Map<string, ControllerMethodParameterMetadata[]> = Reflect.getOwnMetadata(MetadataKey.ControllerMethodParameters, controller.constructor);
+                    if (paramMap && paramMap.has(requestHandlerName)) {
+                        const params: ControllerMethodParameterMetadata[] = paramMap.get(requestHandlerName);
+
+                        try {
+                            params.forEach((paramMetadata) => {
+                                args.push(paramMetadata.provider(context));
+                            });
+                        } catch (ex) {
+                            console.log('error during resolve injection keys:', ex);
+                        }
+                    } else {
+                        console.log(`handler '${requestHandlerName}' has no injections.`);
+                    }
+
+                    return await requestHandler.apply(controller, args);
+                };
+
+                // Each route handler will be a EzRoute inside the EzRouter(Controller).
+                const route = router.add(methodMetadata.path, methodMetadata.method, injectionLayer);
             }
         }
     }

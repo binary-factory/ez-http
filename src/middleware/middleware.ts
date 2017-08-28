@@ -11,6 +11,8 @@ export type EzMiddlewareExecutionResult = MiddlewareAction | Promise<MiddlewareA
 
 export type EzMiddlewareLike = EzMiddleware | EzMiddlewareFunc
 
+export type EzMiddlewareInject = (...args: any[]) => EzMiddlewareExecutionResult | void;
+
 export interface EzMiddlewareFunc {
     (context: EzContext): EzMiddlewareExecutionResult | void;
 }

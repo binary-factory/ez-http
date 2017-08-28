@@ -1,23 +1,23 @@
 import { MetadataKey } from '../metadata/metadata-key';
 import { ControllerMethodMetadata } from '../metadata/controller-method-metadata';
 import { EzRoutePath } from '../router/route';
-import { EzMiddlewareLike } from '../middleware/middleware';
+import { EzMiddlewareInject } from '../middleware/middleware';
+import { EzController } from '../controller';
 
-export function method(method: string, path?: EzRoutePath): any {
-    return function (target: EzMiddlewareLike, propertyKey: string, descriptor: PropertyDescriptor) {
+export function method(method: string, path?: EzRoutePath) {
+    return function (target: EzController, propertyKey: string, descriptor: TypedPropertyDescriptor<EzMiddlewareInject>) {
         const controllerMethodMetadata: ControllerMethodMetadata = {
             target,
             propertyKey,
-            descriptor,
             path,
             method
         };
-        
+
         let metadataList: ControllerMethodMetadata[] = [];
-        if (Reflect.hasOwnMetadata(MetadataKey.ControllerMethod, target.constructor)) {
-            metadataList = Reflect.getOwnMetadata(MetadataKey.ControllerMethod, target.constructor);
+        if (Reflect.hasOwnMetadata(MetadataKey.ControllerMethods, target.constructor)) {
+            metadataList = Reflect.getOwnMetadata(MetadataKey.ControllerMethods, target.constructor);
         } else {
-            Reflect.defineMetadata(MetadataKey.ControllerMethod, metadataList, target.constructor);
+            Reflect.defineMetadata(MetadataKey.ControllerMethods, metadataList, target.constructor);
         }
 
         metadataList.push(controllerMethodMetadata);

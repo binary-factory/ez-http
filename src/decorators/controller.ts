@@ -1,18 +1,13 @@
 import { MetadataKey } from '../metadata/metadata-key';
 import { ControllerMetadata } from '../metadata/controller-metadata';
-import { injectable } from 'inversify';
+import { EzController } from '../controller';
 
-export function controller(prefix: string): any {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+export function controller(prefix: string) {
+    return function (target: EzController) {
         const controllerMetadata: ControllerMetadata = {
             target,
-            propertyKey,
-            descriptor,
             prefix
         };
         Reflect.defineMetadata(MetadataKey.Controller, controllerMetadata, target);
-
-        // Also register as injectable.
-        injectable()(target);
     }
 }

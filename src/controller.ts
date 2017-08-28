@@ -1,3 +1,2 @@
-export interface Controller {
-
+export interface EzController {
 }

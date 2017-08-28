@@ -1,10 +1,11 @@
 import { method } from './method';
 import { HttpMethod } from '../http/http-method';
 import { EzRoutePath } from '../router/route';
-import { EzMiddlewareLike } from '../middleware/middleware';
+import { EzMiddlewareInject } from '../middleware/middleware';
+import { EzController } from '../controller';
 
-export function post(path?: EzRoutePath): any {
-    return function (target: EzMiddlewareLike, propertyKey: string, descriptor: PropertyDescriptor) {
+export function post(path?: EzRoutePath) {
+    return function (target: EzController, propertyKey: string, descriptor: TypedPropertyDescriptor<EzMiddlewareInject>) {
         return method(HttpMethod.Post, path)(target, propertyKey, descriptor);
     }
 }

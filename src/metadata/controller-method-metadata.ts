@@ -1,7 +1,8 @@
-import { Metadata } from './metadata';
 import { EzRoutePath } from '../router/route';
 
-export interface ControllerMethodMetadata extends Metadata {
+export interface ControllerMethodMetadata {
+    target: any;
+    propertyKey: string;
     path: EzRoutePath;
     method: string;
 }
