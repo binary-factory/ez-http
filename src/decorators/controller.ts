@@ -4,13 +4,13 @@ import { injectable } from 'inversify';
 
 export function controller(prefix: string): any {
     return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        const meta: ControllerMetadata = {
+        const controllerMetadata: ControllerMetadata = {
             target,
             propertyKey,
             descriptor,
             prefix
         };
-        Reflect.defineMetadata(MetadataKey.Controller, meta, target);
+        Reflect.defineMetadata(MetadataKey.Controller, controllerMetadata, target);
 
         // Also register as injectable.
         injectable()(target);

@@ -3,19 +3,18 @@ import { HttpError, HttpStatusCode } from './http';
 import { EzContext } from './middleware/context';
 import { EzMiddlewareHolder } from './middleware/middleware-holder';
 import { EzPluginManager } from './plugins/plugin-manager';
-import { Controller } from './inversify/controller';
-import { Type } from './inversify/type';
+import { Controller } from './controller';
 import { MetadataKey } from './metadata/metadata-key';
 import { ControllerMetadata } from './metadata/controller-metadata';
 import { EzRouter } from './router/router';
 import { ControllerMethodMetadata } from './metadata/controller-method-metadata';
-import * as inversify from "inversify";
+import { EzServerConfiguration } from './server-configuration';
 
 
 export class EzServer extends EzMiddlewareHolder {
     private _server: http.Server;
 
-    constructor() {
+    constructor(options?: EzServerConfiguration) {
         super();
         this._server = http.createServer((request: http.IncomingMessage, response: http.ServerResponse) => {
             this.handleRequest(request, response)
@@ -25,8 +24,7 @@ export class EzServer extends EzMiddlewareHolder {
         });
     }
 
-    registerContainer(container: inversify.interfaces.Container) {
-        let controllers: Controller[] = container.getAll<Controller>(Type.Controller);
+    registerControllers(controllers: Controller[]) {
         for (const controller of controllers) {
             const controllerMetadata: ControllerMetadata = Reflect.getOwnMetadata(MetadataKey.Controller, controller.constructor);
             if (!controllerMetadata) {
@@ -43,13 +41,15 @@ export class EzServer extends EzMiddlewareHolder {
         }
     }
 
-    listen(port: number) {
-        this._server.listen(port, () => {
-            // TODO: Resolve Promise.
+    listen(port: number): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this._server.listen(port, () => {
+                resolve();
+            });
         });
     }
 
-    private async handleRequest(request: http.IncomingMessage, response: http.ServerResponse) {
+    private async handleRequest(request: http.IncomingMessage, response: http.ServerResponse): Promise<void> {
         const context = new EzContext(request, response);
 
         for (const plugin of EzPluginManager.plugins) {

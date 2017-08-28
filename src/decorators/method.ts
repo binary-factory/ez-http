@@ -5,13 +5,14 @@ import { EzMiddlewareLike } from '../middleware/middleware';
 
 export function method(method: string, path?: EzRoutePath): any {
     return function (target: EzMiddlewareLike, propertyKey: string, descriptor: PropertyDescriptor) {
-        const meta: ControllerMethodMetadata = {
+        const controllerMethodMetadata: ControllerMethodMetadata = {
             target,
             propertyKey,
             descriptor,
             path,
             method
         };
+        
         let metadataList: ControllerMethodMetadata[] = [];
         if (Reflect.hasOwnMetadata(MetadataKey.ControllerMethod, target.constructor)) {
             metadataList = Reflect.getOwnMetadata(MetadataKey.ControllerMethod, target.constructor);
@@ -19,6 +20,6 @@ export function method(method: string, path?: EzRoutePath): any {
             Reflect.defineMetadata(MetadataKey.ControllerMethod, metadataList, target.constructor);
         }
 
-        metadataList.push(meta);
+        metadataList.push(controllerMethodMetadata);
     }
 }

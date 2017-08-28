@@ -8,9 +8,8 @@
     "declaration": true,
     "experimentalDecorators": true,
     "types": [
-      "reflect-metadata",
-      "inversify",
-      "node"
+      "node",
+      "reflect-metadata"
     ]
   },
   "exclude": [

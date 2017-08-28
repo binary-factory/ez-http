@@ -15,7 +15,6 @@ export interface EzMiddlewareFunc {
     (context: EzContext): EzMiddlewareExecutionResult | void;
 }
 
-
 export abstract class EzMiddleware {
 
     protected _parent: EzMiddlewareHolder;
