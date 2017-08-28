@@ -25,6 +25,7 @@ export class EzServer extends EzMiddlewareHolder {
         });
     }
 
+    // TODO: Move in separated namespace?
     registerControllers(controllers: EzController[]) {
         for (const controller of controllers) {
             const controllerMetadata: ControllerMetadata = Reflect.getOwnMetadata(MetadataKey.Controller, controller.constructor);
@@ -48,10 +49,17 @@ export class EzServer extends EzMiddlewareHolder {
                     const paramMap: Map<string, ControllerMethodParameterMetadata[]> = Reflect.getOwnMetadata(MetadataKey.ControllerMethodParameters, controller.constructor);
                     if (paramMap && paramMap.has(requestHandlerName)) {
                         const params: ControllerMethodParameterMetadata[] = paramMap.get(requestHandlerName);
+                        const reflectedParams = Reflect.getMetadata('design:paramtypes', methodMetadata.target, methodMetadata.propertyKey);
+                        if (reflectedParams && reflectedParams.length !== params.length) {
+                            args.fill(undefined, 0, reflectedParams.length - 1);
+                            console.warn(`${controller.constructor.name}/${requestHandlerName}: at least once param is not injected.`);
+                        } else {
+                            args.fill(undefined, 0, params.length - 1);
+                        }
 
                         try {
                             params.forEach((paramMetadata) => {
-                                args.push(paramMetadata.provider(context));
+                                args[paramMetadata.index] = paramMetadata.provider(context);
                             });
                         } catch (ex) {
                             console.log('error during resolve injection keys:', ex);
