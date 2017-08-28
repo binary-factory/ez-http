@@ -1,6 +1,7 @@
 import * as url from 'url';
 import { HttpStatusCode } from '../http/http-status-code';
 import * as http from 'http';
+import * as querystring from 'querystring';
 
 export class EzContext {
 

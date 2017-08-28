@@ -55,7 +55,7 @@ export class EzRoute extends EzMiddlewareHolder {
 
     private matchPath(context: EzContext): boolean {
         const compiled = pathToRegexp(this.fullPath);
-        const matches = compiled.exec(context.url.path);
+        const matches = compiled.exec(context.url.pathname);
         if (matches) {
             // Fill request params.
             context.params = {};
