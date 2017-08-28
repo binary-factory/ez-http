@@ -51,10 +51,10 @@ export class EzServer extends EzMiddlewareHolder {
                         const params: ControllerMethodParameterMetadata[] = paramMap.get(requestHandlerName);
                         const reflectedParams = Reflect.getMetadata('design:paramtypes', methodMetadata.target, methodMetadata.propertyKey);
                         if (reflectedParams && reflectedParams.length !== params.length) {
-                            args.fill(undefined, 0, reflectedParams.length - 1);
+                            args.fill(void 0, 0, reflectedParams.length - 1);
                             console.warn(`${controller.constructor.name}/${requestHandlerName}: at least once param is not injected.`);
                         } else {
-                            args.fill(undefined, 0, params.length - 1);
+                            args.fill(void 0, 0, params.length - 1);
                         }
 
                         try {
