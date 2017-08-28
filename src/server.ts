@@ -85,6 +85,10 @@ export class EzServer extends EzMiddlewareHolder {
         });
     }
 
+    get server(): http.Server {
+        return this._server;
+    }
+
     private async handleRequest(request: http.IncomingMessage, response: http.ServerResponse): Promise<void> {
         const context = new EzContext(request, response);
 
